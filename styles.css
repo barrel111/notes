@@ -3,6 +3,7 @@
 body {
   font-size: 1.1rem;
   line-height: 1.55;
+  background-color: #f7f7f4;
 }
 
 @media (min-width: 992px) {
