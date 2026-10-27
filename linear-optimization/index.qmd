@@ -1,0 +1,6 @@
+---
+title: "Linear Optimization"
+description: "Notes on linear optimization."
+---
+
+Under construction.

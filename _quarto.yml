@@ -1,0 +1,16 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  site-url: "https://barrel111.github.io/notes/"
+  navbar: false
+  search: false
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    number-sections: true
+    html-math-method: katex
+    code-copy: true
