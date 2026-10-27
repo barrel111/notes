@@ -8,8 +8,10 @@ website:
   search: false
 
 format:
-  html:
+  thms-html:
     theme: cosmo
+    mainfont: "EB Garamond"
+    css: styles.css
     toc: true
     number-sections: true
     html-math-method: katex

@@ -1,0 +1,232 @@
+/*-- scss:rules --*/
+
+/* Override these variables in your document stylesheet to customize colors. */
+:root {
+  --thms-theorem-border:     #d63384;
+  --thms-theorem-bg:         #f8f9fa;
+  --thms-lemma-border:       #8b93d6;
+  --thms-lemma-bg:           rgba(79, 70, 229, 0.1);
+  --thms-corollary-border:   #7f95d1;
+  --thms-corollary-bg:       rgba(127, 149, 209, 0.15);
+  --thms-definition-border:  #9C4F4F;
+  --thms-definition-bg:      #F5EDED;
+  --thms-proposition-border: #5D478B;
+  --thms-proposition-bg:     #EDEAF5;
+  --thms-conjecture-border:  #6f42c1;
+  --thms-conjecture-bg:      #f8f9fa;
+  --thms-remark-border:      #4A406A;
+  --thms-remark-bg:          #F3F0F5;
+  --thms-example-border:     #4A704A;
+  --thms-example-bg:         #F5F6F5;
+  --thms-exercise-border:    #C07830;
+  --thms-exercise-bg:        #FDF5ED;
+  --thms-solution-border:    #2A7F7F;
+  --thms-solution-bg:        #EDF5F5;
+}
+
+div.theorem,
+div.lemma,
+div.corollary,
+div.definition,
+div.proposition,
+div.conjecture,
+div.remark,
+div.example,
+div.exercise,
+div.solution {
+  border-left: 4px solid;
+  background-color: #f8f9fa;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 0 4px 4px 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  > p:first-child {
+    margin-top: 0;
+
+    strong {
+      font-weight: bold;
+      color: #212529;
+    }
+  }
+
+  > p:last-of-type {
+    margin-bottom: 0;
+  }
+
+  p {
+    line-height: 1.4em;
+    margin-bottom: 0.25em;
+  }
+}
+
+div.theorem,
+div.lemma,
+div.corollary,
+div.definition,
+div.proposition,
+div.conjecture,
+div.remark,
+div.example,
+div.exercise,
+div.solution,
+.proof {
+  .math {
+    margin: 10px 0;
+  }
+
+  :is(.katex, .MathJax, mjx-container) {
+    font-size: 1em;
+  }
+}
+
+div.theorem    { border-left-color: var(--thms-theorem-border);     background-color: var(--thms-theorem-bg); }
+div.lemma      { border-left-color: var(--thms-lemma-border);       background-color: var(--thms-lemma-bg); }
+div.corollary  { border-left-color: var(--thms-corollary-border);   background-color: var(--thms-corollary-bg); }
+div.definition { border-left-color: var(--thms-definition-border);  background-color: var(--thms-definition-bg); }
+div.proposition{ border-left-color: var(--thms-proposition-border); background-color: var(--thms-proposition-bg); }
+div.conjecture { border-left-color: var(--thms-conjecture-border);  background-color: var(--thms-conjecture-bg); }
+div.remark     { border-left-color: var(--thms-remark-border);      background-color: var(--thms-remark-bg); }
+div.example    { border-left-color: var(--thms-example-border);     background-color: var(--thms-example-bg); }
+div.exercise   { border-left-color: var(--thms-exercise-border);    background-color: var(--thms-exercise-bg); }
+div.solution   { border-left-color: var(--thms-solution-border);    background-color: var(--thms-solution-bg); }
+div.solution.proof { margin-left: 0; padding: 0 0.5em; }
+
+/* Heading layout is presentation, not an insertion into the document AST. */
+.theorem > p:first-child > .theorem-title {
+  display: block;
+}
+
+/* Proofs remain readable until JavaScript installs their controls. */
+.proof:not(.remark) {
+  margin: 15px 0 15px 0.5em;
+  padding: 0;
+}
+
+.proof > p:first-child {
+  font-weight: normal;
+  font-style: normal;
+  margin: 0;
+  padding: 0;
+  line-height: 1.4;
+}
+
+.thms-proof-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25em;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Keep the label's vertical padding inside the clickable button. */
+.solution > .thms-proof-header {
+  align-items: center;
+  line-height: 1;
+
+  .thms-proof-toggle {
+    align-items: center;
+    padding-block: 11px;
+  }
+
+  .thms-proof-label,
+  .thms-proof-indicator,
+  .proof-title {
+    text-box: trim-both cap alphabetic;
+  }
+}
+
+.solution > .thms-proof-body {
+  padding-bottom: 11px;
+}
+
+.proof > p:first-child > .proof-title {
+  display: block;
+}
+
+div.remark > p:first-child > .proof-title,
+div.remark > p:first-child > .proof-title em {
+  font-weight: bold;
+  font-style: normal;
+}
+
+.thms-proof-toggle {
+  appearance: none;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25em;
+  min-width: 24px;
+  min-height: 24px;
+  border: 0;
+  border-radius: 2px;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.7;
+  }
+
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+  }
+
+  &[aria-expanded="true"] > .thms-proof-indicator {
+    transform: rotate(90deg);
+  }
+}
+
+.thms-proof-indicator {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+  color: #6c757d;
+  font-size: 0.8em;
+}
+
+.thms-proof-body {
+  padding-left: 1em;
+  display: flow-root;
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.proof .qed {
+  float: right;
+  font-weight: bold;
+  color: #495057;
+}
+
+.proof::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Print every proof, independently of its saved screen state. */
+@media print {
+  .proof > .thms-proof-body[hidden] {
+    display: flow-root !important;
+  }
+
+  .thms-proof-toggle {
+    display: none;
+  }
+}
