@@ -1,6 +1,7 @@
 project:
   type: website
   output-dir: _site
+  post-render: rm -f _site/index.html
 
 website:
   site-url: "https://barrel111.github.io/notes/"
