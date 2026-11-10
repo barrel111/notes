@@ -1,0 +1,408 @@
+---
+title: "Streaming and Sketching"
+bibliography: references.bib
+---
+::: {.epigraph}
+> The art of losing isn’t hard to master;
+
+> so many things seem filled with the intent
+
+> to be lost that their loss is no disaster.
+> 
+> [— [Elizabeth Bishop]{.smallcaps}, *One Art*]{.quote-source}
+:::
+
+::: {.epigraph}
+> We forget all too soon the things we thought we could never forget.
+>
+> [— [Joan Didion]{.smallcaps}, *Slouching Towards Bethlehem*]{.quote-source}
+::: 
+
+In deploying algorithms, we may be interested in properties beyond just the asymptotic runtime that classical theory focuses on.
+This includes an algorithm's non-asymptotic behavior on actually encountered instances, space usage and restrictions imposed by the input model.
+Here, we focus on the latter two: algorithms that must interact with a large amounts of data arriving over time without having the memory to store all of it.
+This is a common occurence in large data-intesive applications; for example, when aggregating statistics for social media platforms, network traffic or databases.
+Many of the algorithms we discuss are powering some of the most substantial systems in the world as we speak! 
+
+## The Model 
+
+Our algorithms must deal with massively long input streams $\sigma$ whose elements are themselves drawn from a massive universe.
+The simplest model, dubbed the *vanilla streaming model*, only allows an algorithm to read the stream once. 
+We define this model a bit formally to clarify these notions and our notation.
+
+::: {#def-stream}
+# Stream
+A stream $\sigma$ is a sequence $\langle a_1, a_2, \dots, a_m \rangle$ whose elements, called *tokens*, are drawn from the universe $\mathcal U \defeq [n]$.
+:::
+
+Viewing $m, n$ as being quite large, naturally the main goal for us--besides an efficient runtime-- is using little space. 
+Particularly, storing the entire stream would take $m \log n$ bits, which we expect to be prohibitively large.
+As a result, we want the number of bits $s$ used by our algorithms to be sublinear in both $m, n$. 
+That is, we want $s \in o(\min\{m , n\})$. 
+We would be quite happy with $s \in O(\polylog(m, n))$ and absolutely ecstatic with $O(\log m + \log n)$-- the same amount of space as storing a constant number of tokens and a constant number of counters.
+
+::: {#def-s-streaming-alg}
+# $s$-Space, Single Pass Streaming Algorithm
+
+A *pass* over a stream $\sigma$ consists of reading its tokens once, sequentially from $a_1$ to $a_m$. 
+
+An $s$-space, single pass streaming algorithm makes a single pass over the input stream, using at most $s$ bits of memory at all times.
+
+A randomized algorithm is further allowed to generate fresh, independent, unbiased random bits at any time.
+:::
+
+Crucially, during a pass, an algorithm can access earlier tokens in a stream only through what it has saved in its working memory. 
+Any random bits retained for later use also count to the memory bound.
+
+We further assume that the machine memory is organized as a collection of *words*, each of which store $\log n$ bits-- this is a natural choice as each token $a_i$ then ccupies a single word of memory. 
+Our analysis is also made slightly easier in that we don't have to carry a factor of $\log n$ which appears when counting the number of bits used directly.
+
+In many cases, randomization lets us achieve space guarantees that determinism cannot or at least provides an easier way to do so. 
+In that case, we often want an $(\eps, \delta)$-style PAC guarantee from the algorithm: the algorithm's output, with probability $> 1 - \delta$, should approximate the target quantity with relative error $< \epsilon$
+
+Throughout, unless otherwise stated, we stick to the notation established here: that is, $n$ always denotes the stream length; $m$ always denotes the universe size; $a$ and $a_i$ always denote tokens; $s$ denotes the number of bits used by the algorithm considered.
+Now, for all the fun!
+
+## Heavy Hitters
+
+We begin by considering the problem of identifying tokens that show up frequently in the stream.
+
+::: {#def-heavy-hitter}
+# $k$-Heavy Hitter
+
+Suppose $k \in \N^+$. A $k$-heavy hitter is a value that occurs more than $n/k$ times in the stream.
+
+:::
+
+::: {#prb-heavy-hitters}
+# $k$ Heavy Hitters
+
+Given $k \in \N^+$ and a stream, output a set that contains all the $k$-heavy hitters.
+
+:::
+
+Note that the output is allowed to contain elements that aren't $k$-heavy hitters too.
+
+### Boyer-Moore
+As a warmup consider the $2$-heavy-hitter problem-- that is, we want to find a token attaining simple majority.
+
+The following is an algorithm due to @boyer1991mjrtyfast.
+ 
+```{.pseudocode #alg-boyer-moore caption="Boyer-Moore"}
+\State $x \gets \perp, c \gets 0$
+\For{$i \in [m]$}
+  \State \textbf{observe} $a_i$
+  \If{$c = 0$}
+    \State $x \gets a_i$
+    \State $c \gets 1$
+  \Else
+    \State $c \gets c + 2 \cdot \textbf{1} \{a_i = x\} - 1$
+  \EndIf
+\EndFor
+
+\Output $x$
+```
+
+
+### Misra-Gries
+The prior algorithm generalizes to solve the @prb-heavy-hitters problem too as shown by @misra1982findingrepeated.
+
+```{.pseudocode #alg-misra-gries caption="Misra-Gries"}
+\State $(x_j, c_j) \gets (\perp, 0)$ for $j \in [k - 1]$
+\For{$i \in [m]$}
+  \State \textbf{observe} $a_i$
+  \If{$c_j = 0$ for some $j \in [k - 1]$}
+    \State $x_j \gets a_i$
+    \State $c \gets 1$
+  \Elif{$a_i = x_j$ for some $j \in [k - 1]$}
+    \State $c_j \gets c_j + 1$
+  \Else
+    \State $c_j \gets c_j - 1$ for all $j \in [k - 1]$
+  \EndIf
+\EndFor
+
+\Output $x$
+```
+
+### Lower Bounds
+
+::: {.under-construction}
+⚠️ **Under construction** — w/ DFAs and Myhill-Nyrode!
+:::
+
+## Sampling a Multisubset
+It is often useful to be able to maintain a representative sample of the stream we are given. 
+This also motivates a natural class of algorithms for a variety of problems in the streaming setting: keep track of a representative sample, compute statistics on it and use this to estimate the target statistic for the whole stream.
+
+::: {#prb-sample-multiset}
+# Uniform Token Sampling
+Given $t \in \N^+$, select a uniform random $t$-element subset $I \subseteq [n]$ and output the multiset of values $[a_i \, \mid \, i \in I]$.
+:::
+
+The following is a well-known, widely-applicable way of solving this.
+
+```{.pseudocode #alg-res-sampling caption="Reservoir Sample"}
+\State \textbf{given:} $t \in \N^+$
+\State $(b_1, \dots, b_t) \gets (\perp, \dots, \perp)$
+\For{$i \in [m]$}
+  \State \textbf{observe} $a_i$
+  \If{$i \le t$}
+    \State $b_i \gets a_i$
+  \Else 
+    \State \textbf{with probability $t/i$:} 
+      \State $\hspace{1.2em}$ \textbf{sample} $i \sim \textrm{Uni}([t])$
+      \State $\hspace{1.2em}$ $b_i \gets a_i$
+  \EndIf
+\EndFor
+\State\textbf{output} $(b_1, \dots, b_t)$
+```
+
+### Rank Estimation
+
+We are interested in computing the "emperical" CDF of the stream.
+
+::: {#def-rank}
+# Rank
+
+The rank of a token $a \in \mathcal U$ relative to this stream is
+$$
+\begin{aligned}
+r(a) = \frac{\# \left\{ i \, \mid \, a_i \le a \right\}}{m}.
+\end{aligned}
+$$
+
+We say that $\hat{r}(a)$ is an $\eps$-approximate rank of $a$ when $\abs{\hat r(a) - r(a)} < \eps$.
+:::
+
+::: {#prb-rank}
+# Rank Estimation
+
+Given $\eps, \delta > 0$, output, for every fixed $a \in \mathcal U$, an $\eps$-approximate rank of $a$ with probability greater than $1 - \delta$. 
+That is, for every $a \in \mathcal U$, output $\hat r(a)$ such that 
+$$
+\Pr \left\{ \abs{\hat r(a) - r(a)} \ge \eps \right\} \le \delta
+$$
+:::
+
+
+We apply reservoir-sampling in the obvious way alluded before,
+
+
+<!-- \State \textbf{choose some } $t \ge \frac{1}{2} \varepsilon^{-2} \ln(2/\delta)$ -->
+```{.pseudocode #alg-rank-est caption="Rank Estimation"}
+\State $(b_1, \dots, b_t) \gets \textrm{Reservoir-Sample}(t)$
+\State \textbf{define }
+  $\hat{r}(a) \coloneqq  \# \left\{ j \in [t] \, \mid \, b_j \le a \right\}/ t $
+\State \textbf{output} $\hat q$
+```
+
+
+### Uniform Rank Estimation
+It would be desirable that a single $\hat r$ approximates $r$ well for all $a \in \mathcal U$ in the following sense,
+
+::: {#prb-uni-rank}
+# Uniform Rank Estimation
+
+Given $\eps, \delta > 0$, output a $\hat r$ satisfying $\norm{\hat r - r}_\infty < \eps$ with probability greater than $1 - \delta$.
+:::
+
+By the union bound, if, for each $a \in \mathcal U$, we know that $\hat r (a)$ is an $(\eps, \delta/n)$-PAC for @prb-rank then $\hat r(a)$ is an $(\eps, \delta)$-PAC for @prb-uni-rank. 
+Applying this to @alg-rank-est, we would use $t = \Theta \left(\frac{1}{2} \eps^{-2} \ln(2m/\delta)\right)$ samples to solve @prb-uni-rank.
+
+Surprisingly, we can show that @alg-rank-est can solve @prb-uni-rank with just $t \in \Theta \left( 2 \eps^{-2} \ln \left( \frac{4}{\eps \delta} \right) \right)$ samples.
+
+An even sharper analysis using the DKW inequality (see @boudec2026elementaryproof for a simplified proof) shows that @alg-rank-est can in fact solve @prb-uni-rank with $t \in \Theta \left( \frac{1}{2} \eps^{-2} \ln(2/\delta) \right)$!
+
+<!-- Greenwald-Khanna ? -->
+
+## Hapaxes
+
+We are now interested in streaming algorithms for estimating the number of *unique* elements in a stream. 
+
+::: {#def-hapax}
+# Hapax
+An element that occurs *exactly once* in a stream is called a hapax. 
+By $h$ we denote the number of hapaxes in a stream.
+:::
+
+::: {#prb-hapax}
+# Hapax Estimation
+Given $\eps, \delta > 0$, output $\hat h$ such that $\abs{\hat h - h} < \eps \cdot m$ with probability greater than $1 - \delta$.
+:::
+
+We will use this problem to showcase a variety of useful techniques!
+
+First on the docket, we present a useful trick for amplifying an $(\eps, 1/3)$-PAC guarantee to a $(\eps, \delta)$-PAC guarantee.
+
+::: {#lem-amplify}
+Suppose an algorithm $\mathcal A$ satisfyes a $(\eps, 1/3)$-PAC guarantee for estimating a quantity $x$ then there exists an $(\eps, \delta)$-PAC algorithm for estimating $x$ too.
+:::
+::: {.proof key=lem-amplify}
+
+Suppose $k$ is odd with $k \ge 18 \eps^2 \ln \frac{1}{\delta}$
+
+Run $k$ independent copies of $\mathcal A$, denoting the resulting estimates $\hat{x}_1, \dots, \hat{x}_k$.
+
+Our estimate will then be $\hat{x} = \text{median}(\hat{x}_1, \dots, \hat{x}_k)$. 
+Define 
+$X_i \defeq \mathbf 1 \{ \hat{x}_i \notin [(1 - \eps) \cdot x, (1 + \eps) \cdot x] \}$, 
+for $i \in [k]$ and $X = \sum X_i$.
+
+We have $\E X_i = 1/3$ and $\E X = \sum \E X_i = k/3$.
+
+By Hoeffding's inequality, we have 
+$$
+\begin{aligned}
+    \Pr \left\{ \hat{x} \notin [(1- \eps) \cdot x, (1 + \eps) \cdot x] \right\} 
+    &\le \Pr \left\{ X \ge \frac{k}{2} \right\} \\
+    &= \Pr \left\{ X - \E X \ge k/6 \right\} \\
+    &\le \exp \left( - \frac{k}{\eps^2 18} \right) \le \delta.
+\end{aligned}
+$$
+
+So, we have our $(\epsilon, \delta)$-PAC guarantee.
+
+:::
+
+### Hashing I: Monitoring a Subset of the Buckets
+
+
+
+<!-- \State \textbf{choose} a prime $t \in \left[\frac{12m}{\varepsilon}, \frac{24m}{\varepsilon}\right]$ -->
+<!-- \State $r \gets \left\lceil \frac{576}{\varepsilon^3} \right\rceil$ -->
+```{.pseudocode #alg-hapax-hash-i caption="Bottom-$r$ Monitoring"}
+\State \textbf{draw} $h$ from a $2$-universal family $\mathcal{H}$ of $\mathcal{U} \to \mathbb F_t$ functions
+\State $(c_1, \dots, c_r) \gets (0, \dots, 0)$
+\For{$i \in [m]$}
+  \State \textbf{observe} $a_i$
+  \If{$h(a_i) \le r$}
+    \State $c_{h(a_i)} \gets c_{h(a_i)} + 1$
+  \EndIf
+\EndFor
+\State \textbf{output} $\# \{j \in [r] \, \mid \, c_j = 1\} \cdot (t / r)$
+```
+
+### Hashing II: Monitoring the Preimage of a Bucket
+
+
+<!-- \State \textbf{choose} a prime $t \in \left[ \frac{m\varepsilon^2}{12} , \frac{m \varepsilon^2}{6} \right]$ -->
+<!-- \State $r \gets \left\lceil \frac{32}{\varepsilon^2} \right\rceil$ -->
+```{.pseudocode #alg-hapax-hash-ii caption="Single Bucket Monitoring"}
+\State \textbf{draw} $h$ from a $2$-universal family $\mathcal{H}$ of $\mathcal{U} \to \mathbb F_t$ functions
+\State $(b_j, c_j) \gets (\perp, 0)$ for $j \in [r]$
+\For{$i \in [m]$}
+  \State \textbf{observe} $a_i$
+  \If{$h(a_i) = 0$}
+  \If{there is $j \in [r]$ with $b_j = a_i$}
+    \State $c_j \gets c_j + 1$
+  \ElseIf{there is $j \in [r]$ with $b_j = \perp$}
+    \State $b_j \gets a_i$
+    \State $c_j \gets 1$
+  \EndIf
+  \EndIf
+\EndFor
+\State \textbf{observe} $\# \{ j \in [r] \, \mid \, c_j = 1 \} \cdot t$
+```
+
+### Reservoir Sampling
+
+<!-- \State \textbf{choose} $t \ge \frac{2 \ln 6}{\varepsilon^2}$ -->
+```{.pseudocode #alg-hapax-res caption="Reservoir Sampling for Hapax"}
+\State \textbf{sample} a random $t$-subset $\{ j_1 < \dots < j_t \} \subseteq [n]$ using reservoir sampling
+\State \textbf{maintain} counters $j \in [t]$,
+\State $\hspace{1.2em} c_j \gets$ number of instances of token $a_{j_k}$ after position $j_k$ (inclusive)
+\State \textbf{output} $\# \{ j \in [t] \, \mid \, c_j = 1 \} - \# \{ j \in [t] \, \mid \, c_j = 2 \}$
+```
+
+
+## $F_2$ Estimation
+
+::: {#def-f-k}
+By $\vec f \in \N^{\, \mathcal U}$ denote the frequency vector; that is, $f_a$ denotes the frequency of $a$ in the given stream for each $a \in \mathcal U$.
+We define the $F_k$ statistic as
+$$
+\begin{aligned}
+    F_k \defeq \sum_{a \in \mathcal U} f_i^k = \norm{\vec f}_k^k.
+\end{aligned}
+$$
+:::
+
+The following is the Tug-of-War sketch from the seminal work of @alonspacecomplexity.
+```{.pseudocode #alg-f-2 caption="$F_2$ estimation"}
+\State \textbf{draw} $h$ from a $4$-universal family $\mathcal{H}$ of $\mathcal{U} \to \{-1, + 1\}$ functions
+\State $c \gets 0$
+\For{$i \in [m]$}
+  \State \textbf{observe} $a_i$
+  \State $c \gets c + h(a_i)$
+\EndFor
+\State \textbf{output} $c^2$
+```
+
+
+## Distinct Elements
+
+We wish to estimate the cardinality of the stream-- in other words, the number of distinct elements. 
+Throughout this section we use $m_d$ to denote the number of distinct elelemts.
+
+::: {#prb-distinct-els}
+# Cardinality Estimation
+
+Given $\eps, \delta > 0$, output $\hat{m}_d$ such that $\abs{\hat{m}_d - m_d} < \eps$ with probability greater than $1 - \delta$.
+:::
+
+### Flajolet-Martin
+
+As a warmup to illustrate some crucial ideas, we focus on a weaker version that only requires a multiplicative guarantee.
+
+::: {#prb-distinct-els}
+# Multiplicattive Cardinality Estimation
+
+Given $\eps > 0$, output $\hat{m}_d$ such that $\hat{m}_d \in \left[ \frac{m_d}{6}, 6 \cdot m_d \right]$ with probability greater than $1 - \delta$.
+:::
+
+The following is a reframing of an algorithm from @flajolet1985probabilisticcounting by @bar-yossef2002countingdistinct.
+
+
+```{.pseudocode #alg-fm caption="Flajolet-Martin"}
+\State \textbf{draw} $h$ from a $2$-universal family $\mathcal{H}$ of $\mathcal{U} \to \mathbb{F}_t$ functions
+\State $Z \gets \min \{ h(a_i) \, \mid \, i \in [m]\}$
+\State \textbf{output} $t/Z$
+```
+
+### Bottom-$r$ Sketch
+
+We use ideas similar to @alg-hapax-hash-i: that is, look at the earliest $r$ buckets that are hashed to and use this to estimate the number of distinct elements.
+
+## Frequency Estimation
+
+Now, we shift from estimating some statistic $g(\vec f)$ of the frequency vector $\vec f$ to estimating $\vec f$ itself.
+
+### Count-Min Sketch
+
+::: {#prb-f-2-est}
+# Additive $\vec f$ Estimation
+Give $\eps, \delta > 0$, output $\vec c$ such that, for each token $a$, in the stream $\abs{c_a - f_a} < \eps m$ with probability greater than $1 - \delta$.
+:::
+
+```{.pseudocode #alg-count-min caption="Count-Min Sketch"}
+
+```
+
+### Count Sketch
+
+::: {#prb-f-2-est}
+# Relative $\vec f$ Estimation
+Give $\eps, \delta > 0$, output $\hat c$ such that, for each token $a$, in the stream $\abs{c_a - f_a} < \eps \norm{\vec f}_2$ with probability greater than $1 - \delta$.
+:::
+
+```{.pseudocode #alg-count-sketch caption="Count Sketch"}
+```
+
+
+## Acknowledgements
+
+A lot of the analsyis and presentation has been borrowed from @kleinbergRandomizedAlgorithmsDiscrete2025. 
+Beyond that I am also indebted to RDK for teaching me about streaming algorithms and showing me how amazing they truly are!
+
+Lecture notes from @lec-notes-rand-algs and @lec-notes-data-streams as well as the several primary sources cited throughout were also helpful references.
+

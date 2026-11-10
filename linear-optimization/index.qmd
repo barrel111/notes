@@ -1,6 +1,67 @@
 ---
 title: "Linear Optimization"
 description: "Notes on linear optimization."
+math-web:
+  macros:
+    - lp-macros.sty
+  hooks:
+    - lp.lua
 ---
 
-Under construction.
+
+# Polyhedral Geometry
+
+## Polytopes, Polyhedron, Cones
+
+::: {#def-polytope}
+# Polytopes
+:::
+
+::: {#def-polyhedron}
+# Polyhedra
+:::
+
+::: {#def-cones}
+# Cones
+:::
+
+::: {#def-aff-space}
+# Affine Space
+:::
+
+## Projection of Polyhedra, Fourier-Motzkin
+
+## Theorem of Alternatives
+
+### Separating Hyperplane
+
+### Farkas' Lemmas
+
+## Geometric Structure of Cones
+
+## Geometric Structure of Polyehdra
+
+## Geometric Structure of the Standard Form
+
+## Representation of Polytopes
+
+
+# Optimization: Duality and Geometry
+
+## Optimal Polyhedra
+
+## Constructing the Dual
+
+## Weak, Strong Duality
+
+## Complementary Slackness
+
+## Interpretation of Dual Solutions
+
+## General Polyhedral Representation
+
+# Optimization: Algorithms
+
+## Simplex
+
+## Dual Simplex

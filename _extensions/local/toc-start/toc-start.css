@@ -1,0 +1,7 @@
+/* Change the sidebar's position in document flow, preserving Quarto's sticky
+   top inset and its responsive/mobile navigation. */
+@media (min-width: 992px) {
+  #quarto-content.page-layout-article > #quarto-margin-sidebar {
+    margin-block-start: var(--toc-start-offset, 0px);
+  }
+}

@@ -1,0 +1,20 @@
+# Inherit the notes website, theorem format, macros, and ToC extension.
+# Keep this page's existing stylesheet and KaTeX-based pseudocode rendering.
+from: markdown
+title-prefix: Streaming 2026
+
+format:
+  thms-html:
+    css: styles.css
+    code-copy: hover
+    html-math-method:
+      method: katex
+      url: https://cdn.jsdelivr.net/npm/katex@0.16.22/dist
+
+filters:
+  - pseudocode-short
+  - pseudocode
+
+pseudocode:
+  html-line-number: true
+  html-comment-delimiter: "▷"

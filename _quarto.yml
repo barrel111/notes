@@ -8,12 +8,32 @@ website:
   navbar: false
   search: false
 
+from: markdown+tex_math_single_backslash
+
 format:
   thms-html:
-    theme: cosmo
     mainfont: "EB Garamond"
     css: styles.css
+    title-block-banner: "#f7f7f4"
+    title-block-banner-color: "#373a3c"
     toc: true
-    number-sections: true
-    html-math-method: katex
+    toc-location: right
+    number-sections: false
+    html-math-method:
+      method: mathjax
+      url: "https://cdn.jsdelivr.net/npm/mathjax@4.0.0/tex-mml-chtml.js"
     code-copy: true
+
+filters:
+  - math-web
+  - toc-start
+
+toc-start: first-section
+
+math-web:
+  macros:
+    - latex/math-core.sty
+    - latex/math-analysis.sty
+    - latex/math-prob.sty
+    - latex/math-complexity.sty
+    - latex/math-opt.sty
