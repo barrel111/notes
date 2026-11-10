@@ -1,7 +1,6 @@
 # Inherit the notes website, theorem format, macros, and ToC extension.
 # Keep this page's existing stylesheet and KaTeX-based pseudocode rendering.
 from: markdown
-title-prefix: Streaming 2026
 
 format:
   thms-html:

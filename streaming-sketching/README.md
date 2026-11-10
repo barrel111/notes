@@ -1,4 +1,4 @@
-# Streaming 2026
+# Streaming and Sketching
 
 Notes in the shared Quarto website using [math-web](https://github.com/barrel111/math-web)
 for LaTeX macros and [thms](https://github.com/barrel111/thms) for theorem
@@ -9,13 +9,13 @@ styling and collapsible proofs. Requires Quarto 1.7 or newer.
 Run these commands from `~/Documents/notes/`:
 
 ```sh
-quarto preview streaming-26/index.qmd
+quarto preview streaming-sketching/index.qmd
 ```
 
-To build this page in `_site/streaming-26/`:
+To build this page in `_site/streaming-sketching/`:
 
 ```sh
-quarto render streaming-26/index.qmd
+quarto render streaming-sketching/index.qmd
 ```
 
 ## Edit
