@@ -17,10 +17,25 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: notes
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
+        with:
+          path: notes
+
+      # Match the local layout so notes/latex -> ../configs/latex resolves.
+      - name: Check out shared LaTeX macros
+        uses: actions/checkout@v7
+        with:
+          repository: barrel111/configs
+          ref: main
+          path: configs
+          sparse-checkout: latex
+          persist-credentials: false
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
@@ -39,7 +54,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: _site
+          path: notes/_site
 
   deploy:
     needs: build
